@@ -43,6 +43,23 @@ export default function ConnectWalletButton({
     }
   }, [account, provider]);
 
+  // Optional: Listen for chain changes and reload page or handle logic
+  useEffect(() => {
+    if (window.ethereum) {
+      const handleChainChanged = (chainIdHex) => {
+        // You might want to update your context or trigger a reload here
+        console.log("Chain changed to:", parseInt(chainIdHex, 16));
+        // For example, you can reload to refresh state:
+        // window.location.reload();
+      };
+
+      window.ethereum.on("chainChanged", handleChainChanged);
+      return () => {
+        window.ethereum.removeListener("chainChanged", handleChainChanged);
+      };
+    }
+  }, []);
+
   const connectWallet = async () => {
     if (typeof window.ethereum === "undefined") {
       alert("Please install MetaMask to connect your wallet!");
@@ -161,14 +178,16 @@ export default function ConnectWalletButton({
               {account && (
                 <span
                   className={`ml-2 px-2 py-1 text-xs rounded-full ${
-                    isSupportedNetwork
+                    chainId && isSupportedNetwork
                       ? "bg-green-500/20 text-green-400"
                       : "bg-red-500/20 text-red-400"
                   }`}
                 >
-                  {isSupportedNetwork
-                    ? supportedNetworks[chainId]
-                    : `Unsupported (${chainId})`}
+                  {chainId
+                    ? isSupportedNetwork
+                      ? supportedNetworks[chainId]
+                      : `Unsupported (${chainId})`
+                    : "Network Unknown"}
                 </span>
               )}
             </>
@@ -210,9 +229,6 @@ export default function ConnectWalletButton({
                 )}
               </button>
             ))}
-            <div className="px-4 py-2 text-xs text-gray-400 border-t border-gray-700">
-              Current: {account.slice(0, 8)}...{account.slice(-6)}
-            </div>
           </div>
         </div>
       )}
