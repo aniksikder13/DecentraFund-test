@@ -95,7 +95,7 @@ const CampaignCard = ({ campaign, refreshCampaigns }) => {
           <div className="bg-gray-50 p-3 rounded-lg">
             <p className="text-xs text-gray-500 font-medium">Raised</p>
             <p className="text-lg font-bold text-gray-900">
-              {campaign.currentAmount} ETH
+              {campaign.raised} ETH
             </p>
           </div>
           <div className="bg-gray-50 p-3 rounded-lg">

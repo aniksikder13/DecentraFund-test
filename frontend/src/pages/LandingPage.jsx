@@ -1,11 +1,69 @@
 import { Link } from "react-router-dom";
 import CampaignCard from "../components/campaign/CampaignCard";
 import ConnectWalletButton from "../components/common/ConnectWalletButton";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
+// Example getCampaignData function (simulate fetching)
+async function getCampaignData() {
+  return [
+    {
+      id: 1,
+      title: "Eco-Friendly Water Bottles",
+      goal: "5", 
+      raised: "325", 
+      deadline: 1685856000,
+      description:
+        "Help us launch sustainable water bottles made from recycled materials",
+      image: "",
+      category: "Environment",
+    },
+    {
+      id: 2,
+      title: "Community Garden Project",
+      goal: "10", 
+      raised: "40", 
+      deadline: 1688448000,
+      description:
+        "Support our initiative to create urban gardens in food deserts",
+      image: "",
+      category: "Community",
+    },
+    {
+      id: 3,
+      title: "AI for Good Hackathon",
+      goal: "15", 
+      raised: "127",
+      deadline: 1684166400,
+      description:
+        "Funding for student teams developing AI solutions for social impact",
+      image: "",
+      category: "Technology",
+    },
+  ];
+}
+
+function formatEth(wei) {
+  const eth = Number(BigInt(wei) / BigInt(10 ** 14)) / 10000;
+  return eth.toLocaleString(undefined, {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  });
+}
+
+function formatDeadline(timestamp) {
+  const date = new Date(timestamp * 1000);
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function LandingPage() {
+  const [campaigns, setCampaigns] = useState([]);
+
   useEffect(() => {
     AOS.init({
       duration: 800,
@@ -13,43 +71,24 @@ export default function LandingPage() {
       once: false,
       mirror: false,
     });
-  }, []);
 
-  const featuredCampaigns = [
-    {
-      id: 1,
-      title: "Eco-Friendly Water Bottles",
-      description:
-        "Help us launch sustainable water bottles made from recycled materials",
-      progress: 65,
-      target: 5000,
-      daysLeft: 12,
-      image: "",
-      category: "Environment",
-    },
-    {
-      id: 2,
-      title: "Community Garden Project",
-      description:
-        "Support our initiative to create urban gardens in food deserts",
-      progress: 40,
-      target: 10000,
-      daysLeft: 25,
-      image: "",
-      category: "Community",
-    },
-    {
-      id: 3,
-      title: "AI for Good Hackathon",
-      description:
-        "Funding for student teams developing AI solutions for social impact",
-      progress: 85,
-      target: 15000,
-      daysLeft: 5,
-      image: "",
-      category: "Technology",
-    },
-  ];
+    async function fetchCampaigns() {
+      const data = await getCampaignData();
+      const formatted = data.map((c) => ({
+        ...c,
+        goalEth: formatEth(c.goal),
+        raisedEth: formatEth(c.raised),
+        deadlineFormatted: formatDeadline(c.deadline),
+        progress: Math.min(
+          100,
+          (Number(BigInt(c.raised)) / Number(BigInt(c.goal))) * 100
+        ),
+      }));
+      setCampaigns(formatted);
+    }
+
+    fetchCampaigns();
+  }, []);
 
   const stats = [
     { value: "1,200+", label: "Projects Funded" },
@@ -73,7 +112,7 @@ export default function LandingPage() {
               <h1 className="text-5xl md:text-7xl font-bold leading-tight">
                 Welcome to{" "}
                 <span className="relative inline-block">
-                  <span className="relative  text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-500 animate-text-shine">
+                  <span className="relative text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-500 animate-text-shine">
                     DecentraFund
                   </span>
                   <span className="absolute inset-0 z-0 bg-gradient-to-r from-teal-500/20 to-emerald-500/20 blur-lg rounded-full animate-pulse-slow"></span>
@@ -81,7 +120,6 @@ export default function LandingPage() {
               </h1>
               <p
                 className="text-xl text-indigo-100 max-w-2xl"
-                data-aos="fade-right"
                 data-aos-delay="200"
               >
                 The world's most trusted crowdfunding platform for innovators,
@@ -89,7 +127,6 @@ export default function LandingPage() {
               </p>
               <div
                 className="flex flex-col sm:flex-row gap-4"
-                data-aos="fade-right"
                 data-aos-delay="300"
               >
                 <Link
@@ -101,6 +138,7 @@ export default function LandingPage() {
                 <ConnectWalletButton variant="landing" />
               </div>
             </div>
+
             <div
               className="lg:w-1/2 relative"
               data-aos="fade-left"
@@ -114,7 +152,6 @@ export default function LandingPage() {
                   data-aos="zoom-in"
                   data-aos-delay="500"
                 />
-
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
                   <div
                     className="flex items-center"
@@ -187,7 +224,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredCampaigns.map((campaign, index) => (
+            {campaigns.map((campaign, index) => (
               <div
                 key={campaign.id}
                 data-aos="fade-up"
@@ -222,43 +259,6 @@ export default function LandingPage() {
               </svg>
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-indigo-700 to-purple-700 text-white">
-        <div
-          className="max-w-7xl mx-auto px-6 lg:px-8 text-center"
-          data-aos="zoom-in"
-          data-aos-delay="100"
-        >
-          <h2 className="text-4xl font-bold mb-6">
-            Ready to bring your idea to life?
-          </h2>
-          <p className="text-xl text-indigo-100 max-w-3xl mx-auto mb-10">
-            Join thousands of creators who've turned their dreams into reality
-            with our platform.
-          </p>
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-full text-indigo-700 bg-white hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-            data-aos="zoom-in"
-            data-aos-delay="200"
-          >
-            Start Your Campaign Today
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="ml-2 h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </Link>
         </div>
       </section>
     </div>
